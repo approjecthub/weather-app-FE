@@ -1,11 +1,21 @@
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import { showErrorMessage, showSuccessMessage } from "../../helper";
+import {
+  showErrorMessage,
+  showSuccessMessage,
+} from "../../helper/toastMessage";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../AuthContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, setAuthToken } = useContext(AuthContext);
+  if (isAuthenticated) {
+    navigate("/");
+  }
+
   const initialValues = {
     email: "",
     password: "",
@@ -35,7 +45,8 @@ const Login: React.FC = () => {
       data: JSON.stringify(values),
     };
     try {
-      await axios.request(config);
+      const response = await axios.request(config);
+      setAuthToken(response.data?.token);
       showSuccessMessage("Successfully loggedin");
       resetForm();
       navigate("/");
@@ -47,8 +58,16 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="container h-100 w-100">
+    <div className="container h-100 w-100 d-flex flex-column justify-content-center">
       <h2 className="text-center">Login</h2>
+      <button
+        className="btn btn-link"
+        onClick={() => {
+          navigate("/registration");
+        }}
+      >
+        New User, Click here
+      </button>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}

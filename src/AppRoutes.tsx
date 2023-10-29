@@ -4,16 +4,32 @@ import Home from "./components/Home";
 import Registration from "./components/Registration";
 import Login from "./components/Login";
 import SearchHistory from "./components/SearchHistory";
+import AuthGuard from "./components/AuthGuard";
+import { ROUTES } from "./constants";
 
 const AppRoutes: React.FC = () => {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/registration" element={<Registration />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/search-history" element={<SearchHistory />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path={ROUTES.HOME}
+          element={
+            <AuthGuard>
+              <Home />
+            </AuthGuard>
+          }
+        />
+        <Route path={ROUTES.REGISTRATION} element={<Registration />} />
+        <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route
+          path={ROUTES.SEARCH_HISTORY}
+          element={
+            <AuthGuard>
+              <SearchHistory />
+            </AuthGuard>
+          }
+        />
+        <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
       </Routes>
     </>
   );

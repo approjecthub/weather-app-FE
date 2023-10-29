@@ -1,11 +1,21 @@
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import { showErrorMessage, showSuccessMessage } from "../../helper";
+import {
+  showErrorMessage,
+  showSuccessMessage,
+} from "../../helper/toastMessage";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../AuthContext";
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useContext(AuthContext);
+
+  if (isAuthenticated) {
+    navigate("/");
+  }
   const initialValues = {
     dateOfBirth: "",
     email: "",
@@ -49,8 +59,16 @@ const Registration: React.FC = () => {
   };
 
   return (
-    <div className="container h-100 w-100">
+    <div className="container h-100 w-100 d-flex flex-column justify-content-center">
       <h2 className="text-center">Registration Form</h2>
+      <button
+        className="btn btn-link"
+        onClick={() => {
+          navigate("/login");
+        }}
+      >
+        Already have an account, Click here
+      </button>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}

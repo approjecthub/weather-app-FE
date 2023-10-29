@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import moment from "moment";
 import DisplayWeather from "../DisplayWeather";
-import axios from "axios";
-import { showErrorMessage, showSuccessMessage } from "../../helper";
+import {
+  showErrorMessage,
+  showSuccessMessage,
+} from "../../helper/toastMessage";
+import { deleteHistories, getHistories } from "../../helper/apiRequest";
+import { AuthContext } from "../AuthContext";
 
-const SearchHistory = () => {
+const SearchHistory: React.FC = () => {
   const [openAccordianIndexes, setOpenAccordianIndexes] = useState<number[]>(
     []
   );
@@ -12,6 +16,7 @@ const SearchHistory = () => {
     WeatherData[]
   >([]);
   const [candidatesToDelete, setCandidatesToDelete] = useState<number[]>([]);
+  const { getAuthToken, resetToken } = useContext(AuthContext);
 
   const handleCheckboxClick = (id: number) => {
     if (candidatesToDelete.includes(id)) {
@@ -30,18 +35,17 @@ const SearchHistory = () => {
   };
 
   useEffect(() => {
-    const getHistories = async () => {
-      let config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${process.env.REACT_APP_BE_URL}/weather-search-history`,
-        headers: {},
-      };
+    const getHistoryWrapper = async () => {
       try {
-        const response = await axios.request(config);
-        setWeatherSearchHistories(response.data);
+        const response = await getHistories(getAuthToken()!);
+        setWeatherSearchHistories(response);
         showSuccessMessage("Weather search history fetched successfully");
       } catch (err: any) {
+        if (err?.response?.status === 401) {
+          showErrorMessage("Your session is expired");
+          resetToken();
+          return;
+        }
         showErrorMessage(
           `Error while fetching Weather search history: ${
             err?.response?.data?.error || err.message
@@ -50,24 +54,12 @@ const SearchHistory = () => {
       }
     };
 
-    getHistories();
-  }, []);
+    getHistoryWrapper();
+  }, [getAuthToken, resetToken]);
 
   const handleDelete = async () => {
-    const config = {
-      method: "delete",
-      maxBodyLength: Infinity,
-      url: `${process.env.REACT_APP_BE_URL}/weather-search-history`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: JSON.stringify({
-        wshIds: candidatesToDelete,
-      }),
-    };
-
     try {
-      await axios.request(config);
+      await deleteHistories(getAuthToken()!, candidatesToDelete);
       setWeatherSearchHistories((datas) =>
         datas.filter(({ id }) => !candidatesToDelete.includes(id))
       );
@@ -76,6 +68,11 @@ const SearchHistory = () => {
 
       showSuccessMessage("Histories deleted successfully");
     } catch (err: any) {
+      if (err?.response?.status === 401) {
+        showErrorMessage("Your session is expired");
+        resetToken();
+        return;
+      }
       showErrorMessage(
         `Error while deleting Weather search history: ${
           err?.response?.data?.error || err.message
@@ -83,6 +80,7 @@ const SearchHistory = () => {
       );
     }
   };
+
   return (
     <>
       <div className="d-flex justify-content-end mx-5 mt-5">

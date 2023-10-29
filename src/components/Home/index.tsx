@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { showErrorMessage, showSuccessMessage } from "../../helper";
+import { useContext, useEffect, useState } from "react";
+import {
+  showErrorMessage,
+  showSuccessMessage,
+} from "../../helper/toastMessage";
 import DisplayWeather from "../DisplayWeather";
+import { getCities, getWeather } from "../../helper/apiRequest";
+import { AuthContext } from "../AuthContext";
 
 const Home: React.FC = () => {
   const [searchedCity, setSearchedCity] = useState("");
@@ -9,29 +13,7 @@ const Home: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-
-  const getWeather = async (city: SuggestedCity) => {
-    const { lat, lon, name } = city;
-    setSearchedCity(name);
-
-    let config = {
-      method: "get",
-      maxBodyLength: Infinity,
-      url: `${process.env.REACT_APP_BE_URL}/weather/city-weather?lat=${lat}&lon=${lon}`,
-      headers: {},
-    };
-    try {
-      const response = await axios.request(config);
-      setWeatherData(response.data);
-      showSuccessMessage("Weather Data fetched successfully");
-    } catch (err: any) {
-      showErrorMessage(
-        `Error while fetching Weather Data: ${
-          err?.response?.data?.error || err.message
-        }`
-      );
-    }
-  };
+  const { getAuthToken, resetToken } = useContext(AuthContext);
 
   useEffect(() => {
     const delay = 500; // Adjust the debounce delay as needed
@@ -47,22 +29,23 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (debouncedSearchTerm) {
-      const getCities = async () => {
-        let config = {
-          method: "get",
-          maxBodyLength: Infinity,
-          url: `${process.env.REACT_APP_BE_URL}/weather/city?cityPrefix=${debouncedSearchTerm}`,
-          headers: {},
-        };
-
+      const getCitiesWrapper = async () => {
         try {
-          const response = await axios.request(config);
-          setSuggestedCities(response.data);
-        } catch (err: any) {}
+          const response = await getCities(
+            debouncedSearchTerm,
+            getAuthToken()!
+          );
+          setSuggestedCities(Array.isArray(response) ? response : []);
+        } catch (err: any) {
+          if (err?.response?.status === 401) {
+            showErrorMessage("Your session is expired");
+            resetToken();
+          }
+        }
       };
-      getCities();
+      getCitiesWrapper();
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, getAuthToken, resetToken]);
 
   const handleTextChange = async (evt: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchTerm = evt.target.value;
@@ -70,11 +53,31 @@ const Home: React.FC = () => {
     setSearchedCity(newSearchTerm);
   };
 
-  const selectCity = (evt: React.MouseEvent<HTMLUListElement, MouseEvent>) => {
+  const selectCity = async (
+    evt: React.MouseEvent<HTMLUListElement, MouseEvent>
+  ) => {
     const id = (evt.target as HTMLUListElement).id;
     const idx = id.split("_")[1];
-    getWeather(suggestedCities[+idx]);
+    const city = suggestedCities[+idx];
+    const { lat, lon, name } = city;
+    setSearchedCity(name);
     setSuggestedCities([]);
+
+    try {
+      const data = await getWeather(lat, lon, getAuthToken()!);
+      setWeatherData(data);
+      showSuccessMessage("Weather data is fetched successfully");
+    } catch (err: any) {
+      showErrorMessage(
+        `Error while fetching Weather Data: ${
+          err?.response?.data?.error || err.message
+        }`
+      );
+      if (err?.response?.status === 401) {
+        showErrorMessage("Your session is expired");
+        resetToken();
+      }
+    }
   };
 
   return (
