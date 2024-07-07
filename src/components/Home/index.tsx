@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react";
+
 import {
   showErrorMessage,
   showSuccessMessage,
 } from "../../helper/toastMessage";
-import DisplayWeather from "../DisplayWeather";
 import { getCities, getWeather } from "../../helper/apiRequest";
 import { AuthContext } from "../AuthContext";
+import Map from "../Map";
 
 const Home: React.FC = () => {
   const [searchedCity, setSearchedCity] = useState("");
@@ -14,6 +15,7 @@ const Home: React.FC = () => {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const { getAuthToken, resetToken } = useContext(AuthContext);
+  const [center, setCenter] = useState<[number, number]>([48.8566, 2.3522]);
 
   useEffect(() => {
     const delay = 500; // Adjust the debounce delay as needed
@@ -61,6 +63,7 @@ const Home: React.FC = () => {
     const city = suggestedCities[+idx];
     const { lat, lon, name } = city;
     setSearchedCity(name);
+    setCenter([lat, lon]);
     setSuggestedCities([]);
 
     try {
@@ -105,6 +108,7 @@ const Home: React.FC = () => {
                   id={`city_${idx}`}
                   className="bg-white border p-2"
                   style={{ cursor: "pointer" }}
+                  key={`city_${idx}`}
                 >
                   {city.name}
                 </li>
@@ -112,9 +116,9 @@ const Home: React.FC = () => {
             })}
           </ul>
         </div>
-      </div>
 
-      {weatherData && <DisplayWeather weatherData={weatherData} />}
+        <Map center={center} weatherData={weatherData} />
+      </div>
     </div>
   );
 };
