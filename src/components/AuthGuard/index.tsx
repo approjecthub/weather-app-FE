@@ -1,15 +1,15 @@
-import { ReactNode, useContext } from "react";
+import { useContext } from "react";
 import { AuthContext } from "../AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
-const AuthGuard: React.FC<{ children: ReactNode }> = ({ children }) => {
+const AuthGuard: React.FC = () => {
   const { isAuthenticated } = useContext(AuthContext);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 };
 
 export default AuthGuard;

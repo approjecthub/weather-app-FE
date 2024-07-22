@@ -13,24 +13,13 @@ const AppRoutes: React.FC = () => {
   return (
     <ErrorBoundary {...location}>
       <Routes>
-        <Route
-          path={ROUTES.HOME}
-          element={
-            <AuthGuard>
-              <Home />
-            </AuthGuard>
-          }
-        />
+        <Route element={<AuthGuard />}>
+          <Route path={ROUTES.HOME} element={<Home />} />
+          <Route path={ROUTES.SEARCH_HISTORY} element={<SearchHistory />} />
+        </Route>
+
         <Route path={ROUTES.REGISTRATION} element={<Registration />} />
         <Route path={ROUTES.LOGIN} element={<Login />} />
-        <Route
-          path={ROUTES.SEARCH_HISTORY}
-          element={
-            <AuthGuard>
-              <SearchHistory />
-            </AuthGuard>
-          }
-        />
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
       </Routes>
     </ErrorBoundary>
