@@ -1,15 +1,17 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./components/Home";
 import Registration from "./components/Registration";
 import Login from "./components/Login";
 import SearchHistory from "./components/SearchHistory";
 import AuthGuard from "./components/AuthGuard";
 import { ROUTES } from "./constants";
+import ErrorBoundary from "./ErrorBoundary";
 
 const AppRoutes: React.FC = () => {
+  const location = useLocation();
   return (
-    <>
+    <ErrorBoundary {...location}>
       <Routes>
         <Route
           path={ROUTES.HOME}
@@ -31,7 +33,7 @@ const AppRoutes: React.FC = () => {
         />
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
       </Routes>
-    </>
+    </ErrorBoundary>
   );
 };
 

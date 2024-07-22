@@ -6,15 +6,19 @@ import {
   showSuccessMessage,
 } from "../../helper/toastMessage";
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../AuthContext";
+import { ROUTES } from "../../constants";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, setAuthToken } = useContext(AuthContext);
-  if (isAuthenticated) {
-    navigate("/");
-  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(ROUTES.HOME);
+    }
+  }, [isAuthenticated, navigate]);
 
   const initialValues = {
     email: "",
