@@ -7,8 +7,12 @@ import {
 } from "../../helper/toastMessage";
 import { deleteHistories, getHistories } from "../../helper/apiRequest";
 import { AuthContext } from "../AuthContext";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../../constants";
 
 const SearchHistory: React.FC = () => {
+  const navigate = useNavigate();
   const [openAccordianIndexes, setOpenAccordianIndexes] = useState<number[]>(
     []
   );
@@ -38,7 +42,7 @@ const SearchHistory: React.FC = () => {
     const getHistoryWrapper = async () => {
       try {
         const response = await getHistories(getAuthToken()!);
-        setWeatherSearchHistories(response);
+        setWeatherSearchHistories(response || []);
         showSuccessMessage("Weather search history fetched successfully");
       } catch (err: any) {
         if (err?.response?.status === 401) {
@@ -93,36 +97,50 @@ const SearchHistory: React.FC = () => {
         </button>
       </div>
       <div className="d-flex flex-column align-items-center m-5">
-        {weatherSearchHistories.map((item, index) => (
-          <div className="accordion border p-2 w-100 d-flex" key={index}>
-            <input
-              className="form-check-input mx-2"
-              type="checkbox"
-              id="flexCheckDefault"
-              onClick={() => handleCheckboxClick(item.id)}
-              checked={candidatesToDelete.includes(item.id)}
-            ></input>
-            <div className="flex-grow-1">
-              <div
-                className={`accordion-header d-flex justify-content-between align-items-center bg-light`}
-                onClick={() => handleAccordionClick(index)}
-                style={{ cursor: "pointer" }}
-              >
-                <h3 className="accordion-title mx-5">
-                  {item.place},{item.country}
-                </h3>
-                <h6 className="text-primary">
-                  {moment(item.createdAt).format("D MMM YYYY hA")}
-                </h6>
-              </div>
-              {openAccordianIndexes.includes(index) && (
-                <div className="accordion-body text-center">
-                  <DisplayWeather weatherData={item} />
+        {weatherSearchHistories.length ? (
+          weatherSearchHistories.map((item, index) => (
+            <div className="accordion border p-2 w-100 d-flex" key={index}>
+              <input
+                className="form-check-input mx-2"
+                type="checkbox"
+                id="flexCheckDefault"
+                onClick={() => handleCheckboxClick(item.id)}
+                checked={candidatesToDelete.includes(item.id)}
+              ></input>
+              <div className="flex-grow-1">
+                <div
+                  className={`accordion-header d-flex justify-content-between align-items-center bg-light`}
+                  onClick={() => handleAccordionClick(index)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3 className="accordion-title mx-5">
+                    {item.place},{item.country}
+                  </h3>
+                  <h6 className="text-primary">
+                    {moment(item.createdAt).format("D MMM YYYY hA")}
+                  </h6>
                 </div>
-              )}
+                {openAccordianIndexes.includes(index) && (
+                  <div className="accordion-body text-center">
+                    <DisplayWeather weatherData={item} />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <Container className="text-center mt-5">
+            <Row>
+              <Col>
+                <h1>No Data Found</h1>
+                <p>We couldn't find any data to display.</p>
+                <Button variant="primary" onClick={() => navigate(ROUTES.HOME)}>
+                  Go Back Home
+                </Button>
+              </Col>
+            </Row>
+          </Container>
+        )}
       </div>
     </>
   );
