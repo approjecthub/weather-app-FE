@@ -56,9 +56,11 @@ const Home: React.FC = () => {
   };
 
   const selectCity = async (
-    evt: React.MouseEvent<HTMLUListElement, MouseEvent>
+    evt:
+      | React.MouseEvent<HTMLUListElement, MouseEvent>
+      | React.KeyboardEvent<HTMLUListElement>
   ) => {
-    const id = (evt.target as HTMLUListElement).id;
+    const id = (evt.target as HTMLElement).id;
     const idx = id.split("_")[1];
     const city = suggestedCities[+idx];
     const { lat, lon, name } = city;
@@ -83,6 +85,22 @@ const Home: React.FC = () => {
     }
   };
 
+  const navigateToCity = (evt: React.KeyboardEvent<HTMLUListElement>) => {
+    if (evt.target instanceof HTMLLIElement) {
+      if (evt.key === "ArrowDown") {
+        (
+          (evt.target as HTMLElement).nextElementSibling as HTMLOListElement
+        )?.focus();
+      } else if (evt.key === "ArrowUp") {
+        (
+          (evt.target as HTMLElement).previousElementSibling as HTMLOListElement
+        )?.focus();
+      } else if (evt.key === "Enter") {
+        selectCity(evt);
+      }
+    }
+  };
+
   return (
     <div className="container flex-grow-1 d-flex flex-column justify-content-center align-items-center">
       <div className="container p-5 m-2 bg-light ">
@@ -101,7 +119,11 @@ const Home: React.FC = () => {
             onChange={handleTextChange}
             value={searchedCity}
           />
-          <ul onClick={selectCity} style={{ listStyle: "none" }}>
+          <ul
+            onClick={selectCity}
+            style={{ listStyle: "none" }}
+            onKeyDown={navigateToCity}
+          >
             {suggestedCities.map((city, idx) => {
               return (
                 <li
@@ -109,6 +131,7 @@ const Home: React.FC = () => {
                   className="bg-white border p-2"
                   style={{ cursor: "pointer" }}
                   key={`city_${idx}`}
+                  tabIndex={0}
                 >
                   {city.name}
                 </li>
