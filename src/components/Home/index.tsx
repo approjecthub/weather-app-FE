@@ -43,6 +43,7 @@ const Home: React.FC = () => {
             showErrorMessage("Your session is expired");
             resetToken();
           }
+          setSuggestedCities([])
         }
       };
       getCitiesWrapper();
@@ -109,10 +110,12 @@ const Home: React.FC = () => {
   };
 
   const navigateToFirstCity = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-    (
-      (evt.currentTarget.nextElementSibling as HTMLUListElement)
-        ?.firstElementChild as HTMLLIElement
-    )?.focus();
+    if (evt.key === "ArrowDown") {
+      (
+        (evt.currentTarget.nextElementSibling as HTMLUListElement)
+          ?.firstElementChild as HTMLLIElement
+      )?.focus();
+    }
   };
 
   return (
