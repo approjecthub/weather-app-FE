@@ -89,16 +89,30 @@ const Home: React.FC = () => {
     if (evt.target instanceof HTMLLIElement) {
       if (evt.key === "ArrowDown") {
         (
-          (evt.target as HTMLElement).nextElementSibling as HTMLOListElement
+          (evt.target as HTMLElement).nextElementSibling as HTMLLIElement
         )?.focus();
       } else if (evt.key === "ArrowUp") {
-        (
-          (evt.target as HTMLElement).previousElementSibling as HTMLOListElement
-        )?.focus();
+        const target = (evt.target as HTMLElement)
+          .previousElementSibling as HTMLLIElement;
+        if (target) {
+          target.focus();
+        } else {
+          const parent = (
+            (evt.target as HTMLElement).parentElement as HTMLUListElement
+          ).previousElementSibling as HTMLInputElement;
+          parent.focus();
+        }
       } else if (evt.key === "Enter") {
         selectCity(evt);
       }
     }
+  };
+
+  const navigateToFirstCity = (evt: React.KeyboardEvent<HTMLInputElement>) => {
+    (
+      (evt.currentTarget.nextElementSibling as HTMLUListElement)
+        ?.firstElementChild as HTMLLIElement
+    )?.focus();
   };
 
   return (
@@ -118,6 +132,7 @@ const Home: React.FC = () => {
             placeholder="Enter city name"
             onChange={handleTextChange}
             value={searchedCity}
+            onKeyDown={navigateToFirstCity}
           />
           <ul
             onClick={selectCity}
@@ -131,7 +146,7 @@ const Home: React.FC = () => {
                   className="bg-white border p-2"
                   style={{ cursor: "pointer" }}
                   key={`city_${idx}`}
-                  tabIndex={0}
+                  tabIndex={idx === 0 ? 0 : -1}
                 >
                   {city.name}
                 </li>
