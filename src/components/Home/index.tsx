@@ -43,7 +43,7 @@ const Home: React.FC = () => {
             showErrorMessage("Your session is expired");
             resetToken();
           }
-          setSuggestedCities([])
+          setSuggestedCities([]);
         }
       };
       getCitiesWrapper();
@@ -128,6 +128,7 @@ const Home: React.FC = () => {
         </p>
 
         <div className="form-group">
+          {/* <label htmlFor="search-place">Enter city name</label> */}
           <input
             type="text"
             className="form-control"
@@ -136,8 +137,16 @@ const Home: React.FC = () => {
             onChange={handleTextChange}
             value={searchedCity}
             onKeyDown={navigateToFirstCity}
+            aria-autocomplete="list"
+            aria-controls="suggestions-list"
+            aria-expanded={suggestedCities.length > 0}
+            role="combobox"
+            // aria-activedescendant={
+            //   suggestedCities.length>0 ? `city_${focusedCityIndex}` : undefined
+            // }
           />
           <ul
+            id="suggestions-list"
             onClick={selectCity}
             style={{ listStyle: "none" }}
             onKeyDown={navigateToCity}
@@ -150,6 +159,8 @@ const Home: React.FC = () => {
                   style={{ cursor: "pointer" }}
                   key={`city_${idx}`}
                   tabIndex={idx === 0 ? 0 : -1}
+                  role="option"
+                  // aria-selected={focusedCityIndex === idx}
                 >
                   {city.name}
                 </li>
